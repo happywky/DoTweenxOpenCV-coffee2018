@@ -6,28 +6,40 @@ using DG.Tweening;
 
 public class sceneControllor : MonoBehaviour {
 
-    public GameObject baseLayerOfVideo;
-    public GameObject grayCoverLayer;
+    public GameObject baseLayerOfVideo;           //背景影片Plane
+    public GameObject grayCoverLayer;            //子影片播放時的遮擋plane with Image control by DOfade
 
-    public GameObject[] sectionVideoPlayer;
-    public GameObject[] scanAreaCylinder;
-    public double currentClipPlayedTime;
-    public double thisClipTime;
+    public GameObject[] sectionVideoPlayer;     //子影片播放用的plane
+    public GameObject[] scanAreaCylinder;       //用於掃描定位的圓柱
+    public double currentClipPlayedTime;        //用於檢測子影片播放進度
+    public double thisClipTime;                 //子影片的長度，添加影片時手動在Update中定
 
-    private bool sectionVideoIsOn = false;
-    private bool fadeStateOfGrayCover = false;
-    private int currentSectionNum;
-    private Color colorStart, colorEnd;
+    private bool sectionVideoIsOn = false;      //子影片播放狀態，Upadate中的偵側開關
+    private int currentSectionNum;                  //按下鼠標是定義，用於Update中追蹤子影片放映進度
+    private long baseLayerPausedAtFrame;            //記錄底面影片暫停時的位置
+  
 
 	// Use this for initialization
 	void Start () {
-        colorStart = grayCoverLayer.GetComponent<Renderer>().material.color;
-        colorEnd = new Color(colorStart.r, colorStart.g, colorStart.b, 0.0f);
-        fadeoutGrayCover();
+
+
         hideSectionVideoGroups();
-        //hideGrayCover();
+        StartCoroutine(waitThenStartBGVideo(4f));
 
 	}
+
+    IEnumerator waitThenStartBGVideo(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+
+        baseLayerOfVideo.GetComponent<VideoPlayer>().Play();
+
+        yield return new WaitForSeconds(1f);
+       
+        fadeoutGrayCover();
+        baseLayerOfVideo.GetComponent<MeshRenderer>().materials[0].color = Color.white;
+
+    }
 
     // Update is called once per frame
     void Update()
@@ -56,9 +68,10 @@ public class sceneControllor : MonoBehaviour {
             {
                 showDetectAreaAll();
                 hideSectionVideoGroups();
-                baseLayerOfVideo.GetComponent<VideoPlayer>().frame = 0;
+                //baseLayerOfVideo.GetComponent<VideoPlayer>().frame = 0;
+                baseLayerOfVideo.GetComponent<VideoPlayer>().frame = baseLayerPausedAtFrame;
                 baseLayerOfVideo.GetComponent<VideoPlayer>().Play();
-                fadeStateOfGrayCover = true;
+
                 fadeoutGrayCover();
                 sectionVideoIsOn = false;
             }
@@ -83,8 +96,9 @@ public class sceneControllor : MonoBehaviour {
 
         currentSectionNum = Num;
         currentClipPlayedTime = 0;
+        baseLayerPausedAtFrame = baseLayerOfVideo.GetComponent<VideoPlayer>().frame;
         baseLayerOfVideo.GetComponent<VideoPlayer>().Pause();
-
+        
         sectionVideoPlayer[Num].SetActive(true);
         thisClipTime = sectionVideoPlayer[Num].GetComponent<VideoPlayer>().clip.length;
 
