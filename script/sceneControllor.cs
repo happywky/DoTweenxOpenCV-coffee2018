@@ -23,9 +23,9 @@ public class sceneControllor : MonoBehaviour {
 	void Start () {
         colorStart = grayCoverLayer.GetComponent<Renderer>().material.color;
         colorEnd = new Color(colorStart.r, colorStart.g, colorStart.b, 0.0f);
-
+        fadeoutGrayCover();
         hideSectionVideoGroups();
-        hideGrayCover();
+        //hideGrayCover();
 
 	}
 
@@ -59,29 +59,11 @@ public class sceneControllor : MonoBehaviour {
                 baseLayerOfVideo.GetComponent<VideoPlayer>().frame = 0;
                 baseLayerOfVideo.GetComponent<VideoPlayer>().Play();
                 fadeStateOfGrayCover = true;
+                fadeoutGrayCover();
                 sectionVideoIsOn = false;
             }
         }
-        if(grayCoverLayer.activeInHierarchy && !fadeStateOfGrayCover)
-        {
-            //fadeStateOfGrayCover: true means faded, false means ready to leave fade state;
-            Debug.Log("!fadestateOfGrayCover");
-            for (float t = 0f; t < 1f; t += Time.deltaTime)
-            {
-                grayCoverLayer.GetComponent<Renderer>().material.color = Color.Lerp(colorStart, colorEnd, (1 - t));
-            }
-            fadeStateOfGrayCover = false;
-        }
-
-        if (grayCoverLayer.activeInHierarchy && fadeStateOfGrayCover)
-        {
-            for (float t = 0f; t < 1f; t += Time.deltaTime)
-            {
-                grayCoverLayer.GetComponent<Renderer>().material.color = Color.Lerp(colorStart, colorEnd, t);
-                Debug.Log("t = " + t);
-            }
-            Debug.Log("fadestateOfGrayCover");
-        }
+      
 	}
 
 
@@ -96,7 +78,9 @@ public class sceneControllor : MonoBehaviour {
     public void showPlayThenGray(int Num, float VCRTime)
     {
 
-        showGrayCover();
+        //showGrayCover();
+        fadeinGrayCover();
+
         currentSectionNum = Num;
         currentClipPlayedTime = 0;
         baseLayerOfVideo.GetComponent<VideoPlayer>().Pause();
@@ -137,6 +121,15 @@ public class sceneControllor : MonoBehaviour {
     {
         // call on click cylender and both fade tween
         grayCoverLayer.SetActive(false);
-        Debug.Log("call hideGrayCover once");
+    }
+    public void fadeinGrayCover()
+    {
+        grayCoverLayer.GetComponent<MeshRenderer>().materials[0].DOFade(1f, 0.8f);
+    }
+
+    public void fadeoutGrayCover()
+    {
+        grayCoverLayer.GetComponent<MeshRenderer>().materials[0].DOFade(0f, 0.8f);
+
     }
 }
